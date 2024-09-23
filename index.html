@@ -1,22 +1,37 @@
-<!-- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shape Detection</title>
+    <title>Shape Detection with AR.js</title>
     <script src="https://docs.opencv.org/4.x/opencv.js" async></script>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://cdn.rawgit.com/jeromeetienne/AR.js/master/aframe/build/aframe-ar.js"></script>
     <style>
         canvas {
+            display: block;
+            margin: 0 auto;
+        }
+        #canvasShapes {
+            display: none; /* Initially hidden */
+        }
+        #drawShapesButton {
             display: block;
             margin: 0 auto;
         }
     </style>
 </head>
 <body>
-    <h1>Shape Detection</h1>
-    <video id="videoInput" width="640" height="480" autoplay></video>
+    <h1>Shape Detection with AR.js</h1>
+    <a-scene embedded arjs>
+        <a-marker preset="hiro">
+            <a-entity camera></a-entity>
+        </a-marker>
+        <a-entity id="videoEntity" geometry="primitive: plane; width: 640; height: 480;" material="shader: flat; src: #videoTexture"></a-entity>
+    </a-scene>
+    <video id="videoInput" width="640" height="480" autoplay style="display: none;"></video>
     <canvas id="canvasOutput" width="640" height="480" style="display: none;"></canvas>
-    <canvas id="canvasShapes" width="640" height="480" ></canvas>
+    <canvas id="canvasShapes" width="640" height="480"></canvas>
     <button id="drawShapesButton">Draw Shapes</button>
     
     <script>
@@ -29,6 +44,9 @@
         navigator.mediaDevices.getUserMedia({ video: true })
             .then(stream => {
                 video.srcObject = stream;
+                const videoTexture = new THREE.VideoTexture(video);
+                const videoMaterial = new THREE.MeshBasicMaterial({ map: videoTexture });
+                document.getElementById('videoEntity').setAttribute('material', videoMaterial);
             })
             .catch(err => {
                 console.error("Error accessing camera: " + err);
@@ -77,6 +95,7 @@
         }
 
         document.getElementById('drawShapesButton').addEventListener('click', () => {
+            canvasShapes.style.display = 'block'; // Show the canvas
             ctxShapes.clearRect(0, 0, canvasShapes.width, canvasShapes.height); // Clear previous drawings
 
             for (let shape of detectedShapes) {
@@ -94,27 +113,5 @@
             }
         });
     </script>
-</body>
-</html> -->
-
-<!DOCTYPE html>
-<html>
-<head>
-    <title>AR.js Example</title>
-    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://cdn.rawgit.com/jeromeetienne/AR.js/master/aframe/build/aframe-ar.js"></script>
-    <style>
-        body { margin: 0; }
-        canvas { display: none; }
-    </style>
-</head>
-<body style="margin: 0; overflow: hidden;">
-    <a-scene embedded arjs="sourceType: webcam;">
-        <a-marker preset="hiro">
-            <!-- Increase the radius to make the sphere larger -->
-            <a-sphere position='0 0.5 0' radius='1.5' material='color: blue;'></a-sphere>
-        </a-marker>
-        <a-marker-camera preset="hiro"></a-marker-camera>
-    </a-scene>
 </body>
 </html>
