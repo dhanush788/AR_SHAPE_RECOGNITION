@@ -1,0 +1,119 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shape Detection</title>
+    <script src="https://docs.opencv.org/4.x/opencv.js" async></script>
+    <style>
+        canvas {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Shape Detection</h1>
+    <video id="videoInput" width="640" height="480" autoplay></video>
+    <canvas id="canvasOutput" width="640" height="480" style="display: none;"></canvas>
+    <canvas id="canvasShapes" width="640" height="480" ></canvas>
+    <button id="drawShapesButton">Draw Shapes</button>
+    
+    <script>
+        const video = document.getElementById('videoInput');
+        const canvas = document.getElementById('canvasOutput');
+        const canvasShapes = document.getElementById('canvasShapes');
+        const ctx = canvas.getContext('2d');
+        const ctxShapes = canvasShapes.getContext('2d');
+
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(err => {
+                console.error("Error accessing camera: " + err);
+            });
+
+        video.addEventListener('play', () => {
+            setInterval(detectShapes, 100);
+        });
+
+        let detectedShapes = []; // Store detected shapes
+
+        function detectShapes() {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            let src = cv.imread(canvas);
+            let gray = new cv.Mat();
+            cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+            let edges = new cv.Mat();
+            cv.Canny(gray, edges, 50, 150);
+            let contours = new cv.MatVector();
+            let hierarchy = new cv.Mat();
+            cv.findContours(edges, contours, hierarchy, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE);
+
+            // Clear the detected shapes array
+            detectedShapes = [];
+
+            for (let i = 0; i < contours.size(); i++) {
+                let cnt = contours.get(i);
+                let approx = new cv.Mat();
+                cv.approxPolyDP(cnt, approx, 0.02 * cv.arcLength(cnt, true), true);
+
+                if (approx.rows === 3) {
+                    // Triangle
+                    detectedShapes.push({ contour: cnt, color: [255, 0, 0, 255] });
+                } else if (approx.rows === 4) {
+                    // Square or Rectangle
+                    detectedShapes.push({ contour: cnt, color: [0, 255, 0, 255] });
+                } else if (approx.rows > 4) {
+                    // Circle
+                    detectedShapes.push({ contour: cnt, color: [0, 0, 255, 255] });
+                }
+                approx.delete();
+            }
+
+            cv.imshow('canvasOutput', src);
+            src.delete(); gray.delete(); edges.delete(); contours.delete(); hierarchy.delete();
+        }
+
+        document.getElementById('drawShapesButton').addEventListener('click', () => {
+            ctxShapes.clearRect(0, 0, canvasShapes.width, canvasShapes.height); // Clear previous drawings
+
+            for (let shape of detectedShapes) {
+                ctxShapes.strokeStyle = `rgba(${shape.color[0]}, ${shape.color[1]}, ${shape.color[2]}, ${shape.color[3] / 255})`;
+                ctxShapes.lineWidth = 2;
+                ctxShapes.beginPath();
+                ctxShapes.moveTo(shape.contour.data32S[0], shape.contour.data32S[1]); // Start at first point
+
+                for (let j = 0; j < shape.contour.rows; j++) {
+                    ctxShapes.lineTo(shape.contour.data32S[j * 2], shape.contour.data32S[j * 2 + 1]);
+                }
+
+                ctxShapes.closePath();
+                ctxShapes.stroke();
+            }
+        });
+    </script>
+</body>
+</html> -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AR.js Example</title>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://cdn.rawgit.com/jeromeetienne/AR.js/master/aframe/build/aframe-ar.js"></script>
+    <style>
+        body { margin: 0; }
+        canvas { display: none; }
+    </style>
+</head>
+<body style="margin: 0; overflow: hidden;">
+    <a-scene embedded arjs="sourceType: webcam;">
+        <a-marker preset="hiro">
+            <a-box position='0 0.5 0' material='color: red;'></a-box>
+        </a-marker>
+        <a-marker-camera preset="hiro"></a-marker-camera>
+    </a-scene>
+</body>
+</html>
