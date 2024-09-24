@@ -39,10 +39,27 @@
         }
 
         #drawShapesButton {
-            position: relative;
+            position: fixed;
+            /* Change to fixed position */
             bottom: 20px;
+            /* Keep it at the bottom */
             left: 20px;
+            /* Keep it aligned to the left */
             z-index: 3;
+            padding: 15px 30px;
+            /* Increase padding for better touch targets */
+            font-size: 16px;
+            /* Increase font size */
+            background-color: rgba(255, 255, 255, 0.8);
+            /* Light background for visibility */
+            border: none;
+            /* Remove default border */
+            border-radius: 5px;
+            /* Rounded corners */
+            cursor: pointer;
+            /* Pointer cursor */
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            /* Add a shadow for depth */
         }
     </style>
 </head>
@@ -52,9 +69,9 @@
     <div id="ar-container">
         <a-scene>
             <a-plane id="canvasPlane" position="-1 1.5 -3" rotation="0 0 0" width="4" height="4"
-            material="src: #canvasShapes" color="#7BC8A4"></a-plane>
+                material="src: #canvasShapes" color="#7BC8A4"></a-plane>
         </a-scene>
-        <video id="videoInput" autoplay playsinline ></video>
+        <video id="videoInput" autoplay playsinline></video>
         <canvas id="canvasOutput" width="640" height="480" style="display: none;"></canvas>
         <canvas id="canvasShapes" width="640" height="480" style="display: none;"></canvas>
         <button id="drawShapesButton">Draw Shapes</button>
