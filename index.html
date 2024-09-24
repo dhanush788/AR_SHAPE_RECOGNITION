@@ -1,182 +1,155 @@
-    <!-- <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Shape Detection with AR</title>
-        <script src="https://docs.opencv.org/4.x/opencv.js" async></script>
-        <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-        <script src="https://cdn.rawgit.com/jeromeetienne/AR.js/master/aframe/build/AR.js"></script>
-        <style>
-            body {
-                margin: 0;
-                overflow: hidden;
-            }
-            #ar-container {
-                position: relative;
-                width: 100%;
-                height: 100vh;
-            }
-            video {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                object-fit: cover; /* Ensures video covers the entire area */
-                z-index: 1; /* Ensures video is on top */
-            }
-            #canvasShapes {
-                position: absolute;
-                top: 0;
-                left: 0;
-                pointer-events: none;
-                z-index: 2; /* Canvas above the video */
-            }
-            #drawShapesButton {
-                position: absolute;
-                bottom: 20px;
-                left: 20px;
-                z-index: 3; /* Button above everything else */
-            }
-        </style>
-    </head>
-    <body>
-        <h1 style="display: none;">Shape Detection with AR</h1>
-        <div id="ar-container">
-            <a-scene embedded arjs="trackingMethod: best; sourceType: webcam;">
-                <a-marker preset="hiro">
-                    <a-entity id="shapeEntity" geometry="primitive: box; width: 1; height: 1; depth: 1;" material="color: red;"></a-entity>
-                </a-marker>
-                <a-entity camera></a-entity>
-            </a-scene>
-            <video id="videoInput" autoplay></video>
-            <canvas id="canvasOutput" width="640" height="480" style="display: none;"></canvas>
-            <canvas id="canvasShapes" width="640" height="480"></canvas>
-            <button id="drawShapesButton">Draw Shapes</button>
-        </div>
+<!DOCTYPE html>
+<html lang="en">
 
-        <script>
-            const video = document.getElementById('videoInput');
-            const canvas = document.getElementById('canvasOutput');
-            const canvasShapes = document.getElementById('canvasShapes');
-            const ctx = canvas.getContext('2d');
-            const ctxShapes = canvasShapes.getContext('2d');
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shape Detection with AR</title>
+    <script src="https://docs.opencv.org/4.x/opencv.js" async></script>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://cdn.rawgit.com/jeromeetienne/AR.js/master/aframe/build/AR.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
 
-            navigator.mediaDevices.getUserMedia({ video: true })
-                .then(stream => {
-                    video.srcObject = stream;
-                })
-                .catch(err => {
-                    console.error("Error accessing camera: " + err);
-                });
+        #ar-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+        }
 
-            video.addEventListener('play', () => {
-                setInterval(detectShapes, 100);
+        video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+
+        #canvasShapes {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        #drawShapesButton {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 3;
+            /* Button above everything else */
+        }
+    </style>
+</head>
+
+<body>
+    <h1 style="display: none;">Shape Detection with AR</h1>
+    <div id="ar-container">
+        <a-scene>
+            <a-plane id="canvasPlane" position="-1 1.5 -3" rotation="0 0 0" width="4" height="4"
+            material="src: #canvasShapes" color="#7BC8A4"></a-plane>
+        </a-scene>
+        <video id="videoInput" autoplay playsinline ></video>
+        <canvas id="canvasOutput" width="640" height="480" style="display: none;"></canvas>
+        <canvas id="canvasShapes" width="640" height="480" style="display: none;"></canvas>
+        <button id="drawShapesButton">Draw Shapes</button>
+    </div>
+
+    <script>
+        const video = document.getElementById('videoInput');
+        const canvas = document.getElementById('canvasOutput');
+        const canvasShapes = document.getElementById('canvasShapes');
+        const ctx = canvas.getContext('2d');
+        const ctxShapes = canvasShapes.getContext('2d');
+
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(err => {
+                console.error("Error accessing camera: " + err);
             });
 
-            let detectedShapes = []; // Store detected shapes
+        video.addEventListener('play', () => {
+            setInterval(detectShapes, 100);
+        });
 
-            function detectShapes() {
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                let src = cv.imread(canvas);
-                let gray = new cv.Mat();
-                cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
-                let edges = new cv.Mat();
-                cv.Canny(gray, edges, 50, 150);
-                let contours = new cv.MatVector();
-                let hierarchy = new cv.Mat();
-                cv.findContours(edges, contours, hierarchy, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE);
+        let detectedShapes = []; // Store detected shapes
 
-                // Clear the detected shapes array
-                detectedShapes = [];
+        function detectShapes() {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            let src = cv.imread(canvas);
+            let gray = new cv.Mat();
+            cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+            let edges = new cv.Mat();
+            cv.Canny(gray, edges, 50, 150);
+            let contours = new cv.MatVector();
+            let hierarchy = new cv.Mat();
+            cv.findContours(edges, contours, hierarchy, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE);
 
-                for (let i = 0; i < contours.size(); i++) {
-                    let cnt = contours.get(i);
-                    let approx = new cv.Mat();
-                    cv.approxPolyDP(cnt, approx, 0.02 * cv.arcLength(cnt, true), true);
+            // Clear the detected shapes array
+            detectedShapes = [];
 
-                    if (approx.rows === 3) {
-                        // Triangle
-                        detectedShapes.push({ contour: cnt, color: [255, 0, 0, 255] });
-                    } else if (approx.rows === 4) {
-                        // Square or Rectangle
-                        detectedShapes.push({ contour: cnt, color: [0, 255, 0, 255] });
-                    } else if (approx.rows > 4) {
-                        // Circle
-                        detectedShapes.push({ contour: cnt, color: [0, 0, 255, 255] });
-                    }
-                    approx.delete();
+            for (let i = 0; i < contours.size(); i++) {
+                let cnt = contours.get(i);
+                let approx = new cv.Mat();
+                cv.approxPolyDP(cnt, approx, 0.02 * cv.arcLength(cnt, true), true);
+
+                if (approx.rows === 3) {
+                    // Triangle
+                    detectedShapes.push({ contour: cnt, color: [255, 0, 0, 255] });
+                } else if (approx.rows === 4) {
+                    // Square or Rectangle
+                    detectedShapes.push({ contour: cnt, color: [0, 255, 0, 255] });
+                } else if (approx.rows > 4) {
+                    // Circle
+                    detectedShapes.push({ contour: cnt, color: [0, 0, 255, 255] });
                 }
-
-                cv.imshow('canvasOutput', src);
-                src.delete(); gray.delete(); edges.delete(); contours.delete(); hierarchy.delete();
+                approx.delete();
             }
 
-            document.getElementById('drawShapesButton').addEventListener('click', () => {
-                ctxShapes.clearRect(0, 0, canvasShapes.width, canvasShapes.height); // Clear previous drawings
+            cv.imshow('canvasOutput', src);
+            src.delete(); gray.delete(); edges.delete(); contours.delete(); hierarchy.delete();
+        }
 
-                for (let shape of detectedShapes) {
-                    ctxShapes.strokeStyle = `rgba(${shape.color[0]}, ${shape.color[1]}, ${shape.color[2]}, ${shape.color[3] / 255})`;
-                    ctxShapes.lineWidth = 2;
-                    ctxShapes.beginPath();
-                    ctxShapes.moveTo(shape.contour.data32S[0], shape.contour.data32S[1]); // Start at first point
+        document.getElementById('drawShapesButton').addEventListener('click', () => {
+            ctxShapes.clearRect(0, 0, canvasShapes.width, canvasShapes.height); // Clear previous drawings
 
-                    for (let j = 0; j < shape.contour.rows; j++) {
-                        ctxShapes.lineTo(shape.contour.data32S[j * 2], shape.contour.data32S[j * 2 + 1]);
-                    }
+            for (let shape of detectedShapes) {
+                ctxShapes.strokeStyle = `rgba(${shape.color[0]}, ${shape.color[1]}, ${shape.color[2]}, ${shape.color[3] / 255})`;
+                ctxShapes.lineWidth = 2;
+                ctxShapes.beginPath();
+                ctxShapes.moveTo(shape.contour.data32S[0], shape.contour.data32S[1]); // Start at first point
 
-                    ctxShapes.closePath();
-                    ctxShapes.stroke();
+                for (let j = 0; j < shape.contour.rows; j++) {
+                    ctxShapes.lineTo(shape.contour.data32S[j * 2], shape.contour.data32S[j * 2 + 1]);
                 }
 
-                // Trigger AR entity visibility based on shape detection
-                if (detectedShapes.length > 0) {
-                    document.getElementById('shapeEntity').setAttribute('visible', true);
-                } else {
-                    document.getElementById('shapeEntity').setAttribute('visible', false);
-                }
-            });
-        </script>
-    </body>
-    </html> -->
+                ctxShapes.closePath();
+                ctxShapes.stroke();
+            }
 
-    <html>
-        <head>
-          <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
-        </head>
-        <body>
-          <a-scene>
-            <!-- Video element to hold the camera feed -->
-            <video id="video" autoplay playsinline style="display: none;"></video>
-      
-            <!-- Sky element with video texture -->
-            <a-sky id="cameraBackground" src="#video" rotation="0 -90 0"></a-sky>
-      
-            <a-box position="-1 0.5 -3" rotation="0 45 0" color="#4CC3D9"></a-box>
-            <a-sphere position="0 1.25 -5" radius="1.25" color="#EF2D5E"></a-sphere>
-            <a-cylinder position="1 0.75 -3" radius="0.5" height="1.5" color="#FFC65D"></a-cylinder>
-            <a-plane position="0 0 -4" rotation="-90 0 0" width="4" height="4" color="#7BC8A4"></a-plane>
-          </a-scene>
-      
-          <script>
-            // Access the camera and stream it to the video element
-            const video = document.getElementById('video');
-      
-            // Check if the browser supports getUserMedia
-            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-              navigator.mediaDevices
-                .getUserMedia({ video: true })
-                .then(function (stream) {
-                  video.srcObject = stream;
-                })
-                .catch(function (error) {
-                  console.log('Error accessing camera: ', error);
-                });
+            const canvasPlane = document.querySelector('#canvasPlane');
+
+            // Trigger canvas texture visibility based on shape detection
+            if (detectedShapes.length > 0) {
+                // Update the material texture dynamically
+                const textureURL = canvasShapes.toDataURL();
+                canvasPlane.setAttribute('material', 'src', textureURL);
+                canvasPlane.setAttribute('visible', true);
+                video.style.display = 'none';
             } else {
-              console.log('getUserMedia not supported in this browser.');
+                canvasPlane.setAttribute('visible', false);
             }
-          </script>
-        </body>
-      </html>
-      
+        });
+
+    </script>
+</body>
+
+</html>
