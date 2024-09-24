@@ -85,7 +85,11 @@
         const ctx = canvas.getContext('2d');
         const ctxShapes = canvasShapes.getContext('2d');
 
-        navigator.mediaDevices.getUserMedia({ video: true })
+        navigator.mediaDevices.getUserMedia({ 
+            video: { 
+                facingMode: 'environment' 
+            }
+        })
             .then(stream => {
                 video.srcObject = stream;
             })
