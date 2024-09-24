@@ -74,7 +74,7 @@
         <a-scene>
             <a-sky color="#87CEEB"></a-sky>
             <a-plane id="canvasPlane" position="-1 1.5 -3" rotation="0 0 0" width="4" height="4"
-            material="src: #canvasShapes; transparent: true; opacity: 0.5"></a-plane>        
+                material="src: #canvasShapes; transparent: true; opacity: 0.5"></a-plane>
             <a-plane position="0 0 0" rotation="-90 0 0" width="1000" height="1000" color="#7BC8A4"
                 repeat="100 100"></a-plane>
             <a-light type="ambient" color="#FFFFFF" intensity="0.5"></a-light>
@@ -121,22 +121,43 @@
             // Clear the detected shapes array
             detectedShapes = [];
 
+            let maxArea = 0;
+            let dominantShape = null;
+
             for (let i = 0; i < contours.size(); i++) {
                 let cnt = contours.get(i);
+                let area = cv.contourArea(cnt);
+
+                // Approximate the contour shape
                 let approx = new cv.Mat();
                 cv.approxPolyDP(cnt, approx, 0.02 * cv.arcLength(cnt, true), true);
 
+                // Determine if it's a triangle, rectangle, or circle
+                let shapeType = null;
+                let color = null;
+
                 if (approx.rows === 3) {
-                    // Triangle
-                    detectedShapes.push({ contour: cnt, color: [255, 0, 0, 255] });
+                    shapeType = "Triangle";
+                    color = [255, 0, 0, 255]; // Red for triangle
                 } else if (approx.rows === 4) {
-                    // Square or Rectangle
-                    detectedShapes.push({ contour: cnt, color: [0, 255, 0, 255] });
+                    shapeType = "Rectangle";
+                    color = [0, 255, 0, 255]; // Green for rectangle
                 } else if (approx.rows > 4) {
-                    // Circle
-                    detectedShapes.push({ contour: cnt, color: [0, 0, 255, 255] });
+                    shapeType = "Circle";
+                    color = [0, 0, 255, 255]; // Blue for circle
                 }
+
+                if (shapeType && area > maxArea) {
+                    maxArea = area;
+                    dominantShape = { contour: cnt, color: color, type: shapeType };
+                }
+
                 approx.delete();
+            }
+
+            // Add the dominant shape to detectedShapes
+            if (dominantShape) {
+                detectedShapes.push(dominantShape);
             }
 
             cv.imshow('canvasOutput', src);
@@ -146,19 +167,20 @@
         document.getElementById('drawShapesButton').addEventListener('click', () => {
             ctxShapes.clearRect(0, 0, canvasShapes.width, canvasShapes.height); // Clear previous drawings
 
-            for (let shape of detectedShapes) {
-                ctxShapes.strokeStyle = `rgba(${shape.color[0]}, ${shape.color[1]}, ${shape.color[2]}, ${shape.color[3] / 255})`;
-                ctxShapes.lineWidth = 2;
-                ctxShapes.beginPath();
-                ctxShapes.moveTo(shape.contour.data32S[0], shape.contour.data32S[1]); // Start at first point
+            if (detectedShapes.length > 0) {
+            const shape = detectedShapes[0];
+            ctxShapes.strokeStyle = `rgba(${shape.color[0]}, ${shape.color[1]}, ${shape.color[2]}, ${shape.color[3] / 255})`;
+            ctxShapes.lineWidth = 2;
+            ctxShapes.beginPath();
+            ctxShapes.moveTo(shape.contour.data32S[0], shape.contour.data32S[1]); // Start at the first point
 
-                for (let j = 0; j < shape.contour.rows; j++) {
-                    ctxShapes.lineTo(shape.contour.data32S[j * 2], shape.contour.data32S[j * 2 + 1]);
-                }
-
-                ctxShapes.closePath();
-                ctxShapes.stroke();
+            for (let j = 0; j < shape.contour.rows; j++) {
+                ctxShapes.lineTo(shape.contour.data32S[j * 2], shape.contour.data32S[j * 2 + 1]);
             }
+
+            ctxShapes.closePath();
+            ctxShapes.stroke();
+        }
 
             const canvasPlane = document.querySelector('#canvasPlane');
 
