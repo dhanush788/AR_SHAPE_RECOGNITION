@@ -1,35 +1,26 @@
-# Lascade task
+# Lascade Task
 
 ## Description
-you can view this app in 
-
-https://lascade-task.vercel.app/
+You can view this app at [Task](https://lascade-task.vercel.app/).
 
 ## Specifications 
-App -this app is an web app build in html and js 
-## device camera
+- **App**: This app is a web application built using HTML and JavaScript.
 
-Back camera is used .
+## Device Camera
+- The back camera is used for the application.
+- The following code is utilized for checking camera access and permissions:
 
-        navigator.mediaDevices.getUserMedia({
-            video: {
-                facingMode: 'environment'
-            }
-        }) 
-        it is used for checking camera and permissions
-        it will popup back and if not available then the froont
+    ```javascript
+    navigator.mediaDevices.getUserMedia({
+        video: {
+            facingMode: 'environment'
+        }
+    });
+    ```
+- This will prompt the user for access to the back camera, and if it is not available, it will fall back to the front camera.
 
+## Identification of Dominant Shapes
+- Dominant shapes are identified based on their area.
 
-## IDentification of dominant shapes
-
-Dominant shapes are identified by means of area.
-
-## AR framework used
-
-I developed a 3D environment using AR.js
-
-
-
-
-
-
+## AR Framework Used
+- A 3D environment has been developed using AR.js.
