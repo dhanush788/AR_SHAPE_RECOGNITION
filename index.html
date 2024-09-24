@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -191,4 +191,42 @@
     </script>
 </body>
 
+</html> -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera Feed</title>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+</head>
+<body>
+    <a-scene>
+        <a-assets>
+            <video id="video" autoplay playsinline loop src="video.mp4"></video>
+        </a-assets>
+
+        <a-videosphere src="#video"></a-videosphere>
+        
+        <a-entity position="0 1.6 -3">
+            <a-plane src="#video" height="1.5" width="2.5" position="0 0 -1" rotation="-90 0 0"></a-plane>
+        </a-entity>
+
+        <a-sky color="#282C54"></a-sky>
+    </a-scene>
+
+    <script>
+        // Access the user's camera
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                const video = document.getElementById('video');
+                video.srcObject = stream;
+                video.play();
+            })
+            .catch(err => {
+                console.error("Error accessing the camera: ", err);
+            });
+    </script>
+</body>
 </html>
