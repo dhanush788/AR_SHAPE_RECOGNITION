@@ -71,11 +71,13 @@
         <canvas id="canvasOutput" width="640" height="480" style="display: none;"></canvas>
         <canvas id="canvasShapes" width="640" height="480" style="display: none;"></canvas>
         <button id="drawShapesButton">Draw Shapes</button>
-        <a-scene>
+        <a-scene embedded arjs="sourceType: webcam;">
             <a-plane id="canvasPlane" position="-1 1.5 -3" rotation="0 0 0" width="4" height="4"
                 material="src: #canvasShapes" color="#7BC8A4"></a-plane>
-                <!-- <a-entity camera></a-entity> -->
-        </a-scene>
+            <a-entity id="rig" position="25 10 0">
+                <a-entity id="camera" camera look-controls></a-entity>
+            </a-entity>
+         </a-scene>
     </div>
 
     <script>
@@ -85,9 +87,9 @@
         const ctx = canvas.getContext('2d');
         const ctxShapes = canvasShapes.getContext('2d');
 
-        navigator.mediaDevices.getUserMedia({ 
-            video: { 
-                facingMode: 'environment' 
+        navigator.mediaDevices.getUserMedia({
+            video: {
+                facingMode: 'environment'
             }
         })
             .then(stream => {
@@ -99,6 +101,22 @@
 
         video.addEventListener('play', () => {
             setInterval(detectShapes, 100);
+        });
+
+        AFRAME.registerComponent('arjs', {
+            init: function () {
+                navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'environment' }
+                 })
+                    .then(stream => {
+                        const video = document.createElement('video');
+                        video.srcObject = stream;
+                        video.play();
+                    })
+                    .catch(error => {
+                        console.error("Error accessing webcam: ", error);
+                    });
+            }
         });
 
         let detectedShapes = []; // Store detected shapes
